@@ -162,10 +162,12 @@ while ($true) {
                     justify-content: center;
                     align-items: center;
                     height: 100vh;
+                    overflow: hidden;
                 }
                 img {
-                    width: 90vw;
-                    height: auto;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
                     max-width: 100%;
                     max-height: 100%;
                 }
